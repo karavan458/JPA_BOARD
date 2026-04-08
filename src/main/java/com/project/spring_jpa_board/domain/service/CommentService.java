@@ -1,6 +1,6 @@
 package com.project.spring_jpa_board.domain.service;
 
-import com.project.spring_jpa_board.domain.repository.CommentRepsoitory;
+import com.project.spring_jpa_board.domain.repository.CommentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -8,9 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class CommentService {
 
-    private final CommentRepsoitory commentRepsoitory;
+    private final CommentRepository commentRepsoitory;
 
-    public CommentService(CommentRepsoitory commentRepsoitory) {
+    public CommentService(CommentRepository commentRepsoitory) {
         this.commentRepsoitory = commentRepsoitory;
     }
 }
