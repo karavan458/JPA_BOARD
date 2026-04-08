@@ -1,8 +1,12 @@
 package com.project.spring_jpa_board.web.contoller;
 
+import com.project.spring_jpa_board.domain.entity.Member;
 import com.project.spring_jpa_board.domain.service.MemberService;
 import com.project.spring_jpa_board.web.dto.JoinDTO;
 import com.project.spring_jpa_board.web.dto.LoginDTO;
+import com.project.spring_jpa_board.web.dto.SessionDTO;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +25,6 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    /**
-     * GET 요청 시 빈 DTO를 모델에 담아 전달해야 타임리프 th:object와 바인딩됨
-     */
     @GetMapping("/join")
     public String joinForm(Model model) {
         model.addAttribute("joinDTO", new JoinDTO());
@@ -39,7 +40,6 @@ public class MemberController {
         try {
             memberService.join(joinDTO);
         } catch (IllegalStateException e) {
-            // "duplicateId" 같은 명시적 에러코드를 사용하면 나중에 메시지 관리가 쉬워짐
             bindingResult.rejectValue("loginId", "duplicateId", e.getMessage());
             return "members/joinForm";
         }
@@ -54,20 +54,32 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public String login(@Valid @ModelAttribute("loginDTO") LoginDTO loginDTO, BindingResult bindingResult) {
+    public String login(@Valid @ModelAttribute("loginDTO") LoginDTO loginDTO, BindingResult bindingResult, HttpServletRequest request) {
         if(bindingResult.hasErrors()) {
             return "members/loginForm";
         }
 
         try {
-            memberService.login(loginDTO);
-            // TODO: 실제 로그인 시 세션 생성 로직 필요
+            Member loginMember = memberService.login(loginDTO);
+            HttpSession session = request.getSession();
+
+            SessionDTO sessionDTO = new SessionDTO(loginMember.getLoginId(), loginMember.getName(), loginMember.getEmail());
+            session.setAttribute("loginMember", sessionDTO);
         } catch (IllegalArgumentException e) {
             // 필드 에러가 아닌 객체 자체의 글로벌 에러로 등록
             bindingResult.reject("loginError", e.getMessage());
             return "members/loginForm";
         }
 
+        return "redirect:/";
+    }
+
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        HttpSession session = request.getSession(false);
+        if(session != null) {
+            session.invalidate();
+        }
         return "redirect:/";
     }
 }
