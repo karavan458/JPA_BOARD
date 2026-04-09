@@ -79,7 +79,19 @@ spring-jpa-board/
 
 ---
 
-### 💡 시스템 디버깅 요약 (Insights)
-1.  **계층 분리**: 데이터의 성격에 따라 Entity와 DTO의 역할을 엄격히 구분하여 유지보수성을 확보함.
-2.  **효율적 패키징**: 프로젝트 규모에 맞는 구조를 선택하여 개발 생산성을 최적화함.
-3.  **방어적 설계**: 리다이렉트 경로 및 세션 객체 설계를 통해 예외 상황에서도 시스템 안정성을 보장함.
+### 📂 [2026-04-10] Phase 4: 게시글 시스템 기초 골격 구축
+> **"게시글 등록 및 열람 기능 구현"**
+
+* **Core Implementation**
+  * **Post Registration**: `PostSaveDTO`를 통한 데이터 캡슐화 및 `PostService` 내 정적 팩토리 메서드(`createPost`)를 활용한 객체 생성 로직 구축.
+  * **Detail View**: `PathVariable` 기반의 단건 조회 시스템 및 `EntityNotFoundException`을 활용한 예외 처리 정렬.
+  * **Ordered List**: `Spring Data JPA` 메서드 쿼리를 활용하여 최신순(Desc) 정렬 조회 로직 완성.
+* **System Debugging & Troubleshooting**
+  * **Case 1 (N+1 Problem)**: 상세 페이지 조회 시 연관된 `Member` 엔티티 호출로 인한 추가 쿼리 병목 지점을 로그로 확인 → **Fetch Join** 도입 필요성 도출.
+  * **Case 2 (Security Gap)**: UI 레벨의 버튼 은닉은 1차 방어일 뿐, URL 직접 접근을 방어하기 위한 **Service Layer의 이중 검증**이 필수적임을 인지.
+* **Architectural Insight**
+  * **Immutable DTO**: `SessionDTO`를 **불변 객체(Immutable Object)**로 리팩토링.
+    * 시스템 권한 검증의 기준이 되는 세션 데이터의 임의 변경을 원천 차단하여 **데이터 무결성** 확보.
+    * 상세 페이지 권한 대조 시 `post.member.id`와 비교되는 기준 데이터를 '읽기 전용'으로 엄격히 관리.
+
+---
