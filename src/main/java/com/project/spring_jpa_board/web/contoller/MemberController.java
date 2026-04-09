@@ -2,13 +2,12 @@ package com.project.spring_jpa_board.web.contoller;
 
 import com.project.spring_jpa_board.domain.entity.Member;
 import com.project.spring_jpa_board.domain.service.MemberService;
-import com.project.spring_jpa_board.web.dto.JoinDTO;
-import com.project.spring_jpa_board.web.dto.LoginDTO;
-import com.project.spring_jpa_board.web.dto.SessionDTO;
+import com.project.spring_jpa_board.web.dto.member.JoinDTO;
+import com.project.spring_jpa_board.web.dto.member.LoginDTO;
+import com.project.spring_jpa_board.web.dto.member.SessionDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -63,7 +62,7 @@ public class MemberController {
             Member loginMember = memberService.login(loginDTO);
             HttpSession session = request.getSession();
 
-            SessionDTO sessionDTO = new SessionDTO(loginMember.getLoginId(), loginMember.getName(), loginMember.getEmail());
+            SessionDTO sessionDTO = new SessionDTO(loginMember.getId(), loginMember.getLoginId(), loginMember.getName(), loginMember.getEmail());
             session.setAttribute("loginMember", sessionDTO);
         } catch (IllegalArgumentException e) {
             // 필드 에러가 아닌 객체 자체의 글로벌 에러로 등록

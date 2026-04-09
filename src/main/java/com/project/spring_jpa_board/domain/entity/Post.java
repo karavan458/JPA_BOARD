@@ -28,10 +28,14 @@ public class Post {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    public Post(String title, String content, Member member, LocalDateTime createdAt) {
+    private Post(String title, String content, Member member) {
         this.title = title;
         this.content = content;
         this.member = member;
-        this.createdAt = createdAt;
+        this.createdAt = LocalDateTime.now();
+    }
+
+    public static Post createPost(String title, String content, Member member) {
+        return new Post(title, content, member);
     }
 }

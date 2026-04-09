@@ -1,4 +1,4 @@
-package com.project.spring_jpa_board.web.dto;
+package com.project.spring_jpa_board.web.dto.member;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

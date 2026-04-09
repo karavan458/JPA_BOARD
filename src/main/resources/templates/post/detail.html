@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Spring Board - 상세 보기</title>
+</head>
+<body>
+<div class="container" style="max-width: 800px; margin-top: 50px;">
+    <div class="py-4 text-center">
+        <h2 class="fw-bold">게시글 상세</h2>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="mb-3">
+                <label class="form-label fw-bold">제목</label>
+                <input type="text" th:value="${post.title}" class="form-control-plaintext border-bottom" readonly>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">작성자</label>
+                    <p class="form-control-plaintext" th:text="${post.member.name}">홍길동</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <label class="form-label fw-bold">작성일</label>
+                    <p class="form-control-plaintext text-muted"
+                       th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2026-04-09</p>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label fw-bold">내용</label>
+                <div class="p-3 bg-light rounded shadow-inner" style="min-height: 200px; white-space: pre-wrap;"
+                     th:text="${post.content}">
+                    게시글 내용이 여기에 표시됩니다.
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary"
+                        th:onclick="|location.href='@{/post/list}'|">목록으로</button>
+
+                <div th:if="${session.loginMember != null and session.loginMember.id == post.member.id}">
+                    <button type="button" class="btn btn-outline-warning">수정</button>
+                    <button type="button" class="btn btn-outline-danger">삭제</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

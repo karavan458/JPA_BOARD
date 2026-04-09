@@ -1,6 +1,6 @@
 package com.project.spring_jpa_board.domain.entity;
 
-import com.project.spring_jpa_board.web.dto.JoinDTO;
+import com.project.spring_jpa_board.web.dto.member.JoinDTO;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

@@ -2,8 +2,8 @@ package com.project.spring_jpa_board.domain.service;
 
 import com.project.spring_jpa_board.domain.entity.Member;
 import com.project.spring_jpa_board.domain.repository.MemberRepository;
-import com.project.spring_jpa_board.web.dto.JoinDTO;
-import com.project.spring_jpa_board.web.dto.LoginDTO;
+import com.project.spring_jpa_board.web.dto.member.JoinDTO;
+import com.project.spring_jpa_board.web.dto.member.LoginDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

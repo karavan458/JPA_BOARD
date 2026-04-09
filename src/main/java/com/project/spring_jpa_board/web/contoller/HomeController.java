@@ -1,12 +1,11 @@
 package com.project.spring_jpa_board.web.contoller;
 
-import com.project.spring_jpa_board.web.dto.SessionDTO;
+import com.project.spring_jpa_board.web.dto.member.SessionDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class HomeController {
