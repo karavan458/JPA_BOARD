@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface PostRepository extends JpaRepository<Post, Long> {
+public interface PostRepository extends JpaRepository<Post, Long>, PostRepositoryCustom {
     // 작성자 별 게시글 필터링
     List<Post> findByMember(Member member);
 
@@ -15,5 +15,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     // 최신순 정렬 조회
     List<Post> findAllByOrderByCreatedAtDesc();
-
 }

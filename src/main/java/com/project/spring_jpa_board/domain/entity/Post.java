@@ -38,4 +38,9 @@ public class Post {
     public static Post createPost(String title, String content, Member member) {
         return new Post(title, content, member);
     }
+
+    public void update(String title, String content) {
+        this.title = title;
+        this.content = content;
+    }
 }

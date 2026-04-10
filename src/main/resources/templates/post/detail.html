@@ -43,8 +43,13 @@
                         th:onclick="|location.href='@{/post/list}'|">목록으로</button>
 
                 <div th:if="${session.loginMember != null and session.loginMember.id == post.member.id}">
-                    <button type="button" class="btn btn-outline-warning">수정</button>
-                    <button type="button" class="btn btn-outline-danger">삭제</button>
+
+                    <a th:href="@{/post/{id}/update(id=${post.id})}"
+                       class="btn btn-outline-warning">수정</a>
+                    <form th:action="@{/post/{id}/delete(id=${post.id})}" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-outline-danger"
+                                onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+                    </form>
                 </div>
             </div>
         </div>
