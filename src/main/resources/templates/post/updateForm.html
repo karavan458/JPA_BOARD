@@ -20,6 +20,9 @@
 
     <form th:action="@{/post/{postId}/update(postId=${postId})}" th:object="${postUpdateDTO}" method="post">
 
+        <input type="hidden" name="writer" th:value="${param.writer}">
+        <input type="hidden" name="page" th:value="${param.page}">
+
         <div class="mb-3">
             <label th:for="title" class="form-label">제목</label>
             <input type="text" th:field="*{title}"
@@ -48,7 +51,9 @@
             <div class="col">
                 <button class="w-100 btn btn-secondary btn-lg"
                         type="button"
-                        th:onclick="|location.href='@{/post/{id}(id=${postId})}'|">취소</button>
+                        th:onclick="|location.href='@{/post/{id}(id=${postId}, page=${param.page}, title=${param.title}, writer=${param.writer})}'|">
+                    취소
+                </button>
             </div>
         </div>
     </form>

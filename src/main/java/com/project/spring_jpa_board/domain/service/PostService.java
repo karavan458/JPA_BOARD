@@ -6,9 +6,12 @@ import com.project.spring_jpa_board.domain.repository.MemberRepository;
 import com.project.spring_jpa_board.domain.repository.PostRepository;
 import com.project.spring_jpa_board.web.dto.member.SessionDTO;
 import com.project.spring_jpa_board.web.dto.post.PostSaveDTO;
+import com.project.spring_jpa_board.web.dto.post.PostSearchCondition;
 import com.project.spring_jpa_board.web.dto.post.PostUpdateDTO;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -65,7 +68,7 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public List<Post> findAll() {
-        return postRepository.findAllWithMember();
+    public Page<Post> search(PostSearchCondition condition, Pageable pageable) {
+        return postRepository.search(condition, pageable);
     }
 }

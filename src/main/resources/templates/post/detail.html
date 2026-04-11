@@ -21,7 +21,7 @@
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">작성자</label>
-                    <p class="form-control-plaintext" th:text="${post.member.name}">홍길동</p>
+                    <p class="form-control-plaintext" th:text="${post.writerName}">홍길동</p>
                 </div>
                 <div class="col-md-6 text-md-end">
                     <label class="form-label fw-bold">작성일</label>
@@ -40,11 +40,13 @@
 
             <div class="d-flex justify-content-between">
                 <button type="button" class="btn btn-secondary"
-                        th:onclick="|location.href='@{/post/list}'|">목록으로</button>
+                        th:onclick="|location.href='@{/post/list(page=${param.page}, title=${param.title}, writer=${param.writer})}'|">
+                    목록으로
+                </button>
 
-                <div th:if="${session.loginMember != null and session.loginMember.id == post.member.id}">
+                <div th:if="${session.loginMember != null and session.loginMember.id == post.writerId}">
 
-                    <a th:href="@{/post/{id}/update(id=${post.id})}"
+                    <a th:href="@{/post/{id}/update(id=${post.id}, page=${param.page}, title=${param.title}, writer=${param.writer})}"
                        class="btn btn-outline-warning">수정</a>
                     <form th:action="@{/post/{id}/delete(id=${post.id})}" method="post" style="display:inline;">
                         <button type="submit" class="btn btn-outline-danger"
