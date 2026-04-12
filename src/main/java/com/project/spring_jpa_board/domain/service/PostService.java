@@ -2,9 +2,11 @@ package com.project.spring_jpa_board.domain.service;
 
 import com.project.spring_jpa_board.domain.entity.Member;
 import com.project.spring_jpa_board.domain.entity.Post;
+import com.project.spring_jpa_board.domain.repository.CommentRepository;
 import com.project.spring_jpa_board.domain.repository.MemberRepository;
 import com.project.spring_jpa_board.domain.repository.PostRepository;
 import com.project.spring_jpa_board.web.dto.member.SessionDTO;
+import com.project.spring_jpa_board.web.dto.post.PostListDTO;
 import com.project.spring_jpa_board.web.dto.post.PostSaveDTO;
 import com.project.spring_jpa_board.web.dto.post.PostSearchCondition;
 import com.project.spring_jpa_board.web.dto.post.PostUpdateDTO;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)
@@ -24,6 +27,7 @@ public class PostService {
 
     private final PostRepository postRepository;
     private final MemberRepository memberRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public Long savePost(Long memberId, PostSaveDTO postSaveDTO) {
@@ -68,7 +72,22 @@ public class PostService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Post> search(PostSearchCondition condition, Pageable pageable) {
-        return postRepository.search(condition, pageable);
+    public Page<PostListDTO> search(PostSearchCondition condition, Pageable pageable) {
+        Page<Post> postPage = postRepository.search(condition, pageable);
+
+        if(postPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        List<Long> postIds = postPage.getContent().stream()
+                .map(Post::getId)
+                .toList();
+
+        Map<Long, Integer> commentCountMap = commentRepository.countByPostId(postIds);
+
+        return postPage.map(post -> {
+            int commentCount = commentCountMap.getOrDefault(post.getId(), 0);
+            return new PostListDTO(post, commentCount);
+        });
     }
 }

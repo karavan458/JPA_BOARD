@@ -42,7 +42,7 @@
             <th>제목</th>
             <th>작성자</th>
             <th>작성일</th>
-        </tr>
+            <th class="text-center">댓글수</th> </tr>
         </thead>
         <tbody>
         <tr th:each="post : ${page.content}">
@@ -51,12 +51,18 @@
                 <a th:href="@{/post/{id}(id=${post.id}, page=${page.number}, title=${postSearch.title}, writer=${postSearch.writer})}"
                    th:text="${post.title}">제목</a>
             </td>
-            <td th:text="${post.member.name}">작성자</td>
+            <td th:text="${post.writerName}">작성자</td>
             <td th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm')}">2026-04-11</td>
+
+            <td class="text-center">
+            <span th:text="${post.commentCount}"
+                  th:classappend="${post.commentCount > 0} ? 'text-primary font-weight-bold' : 'text-muted'">
+                0
+            </span>
+            </td>
         </tr>
         <tr th:if="${page.isEmpty()}">
-            <td colspan="4" class="text-center">조회된 게시글이 없습니다.</td>
-        </tr>
+            <td colspan="5" class="text-center">조회된 게시글이 없습니다.</td> </tr>
         </tbody>
     </table>
 

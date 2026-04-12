@@ -1,12 +1,12 @@
 package com.project.spring_jpa_board.web.contoller;
 
 import com.project.spring_jpa_board.domain.entity.Post;
+import com.project.spring_jpa_board.domain.service.CommentService;
 import com.project.spring_jpa_board.domain.service.PostService;
+import com.project.spring_jpa_board.web.dto.comment.CommentRequestDTO;
+import com.project.spring_jpa_board.web.dto.comment.CommentResponseDTO;
 import com.project.spring_jpa_board.web.dto.member.SessionDTO;
-import com.project.spring_jpa_board.web.dto.post.PostDetailDTO;
-import com.project.spring_jpa_board.web.dto.post.PostSaveDTO;
-import com.project.spring_jpa_board.web.dto.post.PostSearchCondition;
-import com.project.spring_jpa_board.web.dto.post.PostUpdateDTO;
+import com.project.spring_jpa_board.web.dto.post.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +21,8 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.util.List;
+
 @Slf4j
 @Controller
 @RequestMapping("/post")
@@ -28,6 +30,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 public class PostController {
 
     private final PostService postService;
+    private final CommentService commentService;
 
     @GetMapping("/new")
     public String createForm(Model model,
@@ -65,7 +68,25 @@ public class PostController {
         Post post = postService.findById(postId);
         model.addAttribute("post", PostDetailDTO.from(post));
         model.addAttribute("loginMember", loginMember);
+
+        List<CommentResponseDTO> comments = commentService.getComments(postId);
+        model.addAttribute("comments", comments);
         return "post/detail";
+    }
+
+    @PostMapping("/{postId}/comment")
+    public String comment(
+            @PathVariable("postId") Long postId,
+            @RequestParam("content") String content,
+            @SessionAttribute(name = "loginMember", required = false) SessionDTO loginMember) {
+
+        log.info("postId : {}, content : {}", postId, content);
+        log.info("loginMember : {}", loginMember.getLoginId());
+
+        CommentRequestDTO requestDTO = CommentRequestDTO.create(content, postId, loginMember.getId());
+
+        commentService.saveComment(requestDTO);
+        return "redirect:/post/" + postId;
     }
 
     @GetMapping("/list")
@@ -75,12 +96,12 @@ public class PostController {
             Model model) {
 
         log.info("검색 조건 복구 확인: title={}, writer={}", condition.getTitle(), condition.getWriter());
-        Page<Post> page = postService.search(condition, pageable);
+        Page<PostListDTO> page = postService.search(condition, pageable);
 
-        log.info("조회된 게시글 수 : {}", page.getNumberOfElements());
-        for (Post post : page) {
-            log.info("게시글 제목 : {}, 작성사 : {}", post.getTitle(), post.getMember().getName());
-        }
+        page.getContent().forEach(dto -> {
+            log.info("Post ID: {}, Title: {}, Comment Count: {}",
+                    dto.getId(), dto.getTitle(), dto.getCommentCount());
+        });
 
         model.addAttribute("page", page);
         return "post/list";
