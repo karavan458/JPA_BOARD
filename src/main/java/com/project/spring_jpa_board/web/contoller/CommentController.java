@@ -1,8 +1,8 @@
 package com.project.spring_jpa_board.web.contoller;
 
 import com.project.spring_jpa_board.domain.service.CommentService;
-import com.project.spring_jpa_board.web.dto.comment.CommentRequestDTO;
-import com.project.spring_jpa_board.web.dto.member.SessionDTO;
+import com.project.spring_jpa_board.web.dto.comment.CommentSaveRequest;
+import com.project.spring_jpa_board.web.dto.member.MemberSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
@@ -21,21 +21,16 @@ public class CommentController {
     @PostMapping("/{postId}/save")
     public String save(
             @PathVariable Long postId,
-            @Validated @ModelAttribute CommentRequestDTO requestDTO,
+            @Validated @ModelAttribute CommentSaveRequest request,
             BindingResult bindingResult,
-            @SessionAttribute(name = "loginMember") SessionDTO loginMember) {
-
-        log.info("댓글 작성");
+            @SessionAttribute(name = "loginMember") MemberSession loginMember) {
 
         if(bindingResult.hasErrors()) {
             log.info("검증 오류 발생 = {}", bindingResult.getAllErrors());
             return "redirect:/post/" + postId;
         }
 
-        requestDTO.setMemberId(loginMember.getId());
-        requestDTO.setPostId(postId);
-
-        commentService.saveComment(requestDTO);
+        commentService.saveComment(loginMember.getId(), postId, request);
         return "redirect:/post/" + postId;
     }
 
@@ -43,7 +38,7 @@ public class CommentController {
     public String delete(
             @PathVariable Long postId,
             @PathVariable Long commentId,
-            @SessionAttribute(name = "loginMember") SessionDTO loginMember) {
+            @SessionAttribute(name = "loginMember") MemberSession loginMember) {
 
         commentService.delete(commentId, loginMember.getId());
         return "redirect:/post/" + postId;

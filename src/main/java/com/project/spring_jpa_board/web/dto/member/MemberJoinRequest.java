@@ -1,5 +1,7 @@
 package com.project.spring_jpa_board.web.dto.member;
 
+import com.project.spring_jpa_board.domain.entity.Address;
+import com.project.spring_jpa_board.domain.entity.Member;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -7,7 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class JoinDTO {
+public class MemberJoinRequest {
 
     @NotBlank(message = "아이디는 필수 입력 값입니다.")
     private String loginId;
@@ -25,8 +27,18 @@ public class JoinDTO {
     @NotBlank(message = "전화번호는 필수 입력 값입니다.")
     private String phone;
 
-    // 주소 정보 파라미터화
     private String city;
     private String street;
     private String zipcode;
+
+    public Member toEntity() {
+        return Member.builder()
+                .loginId(this.loginId)
+                .password(this.password)
+                .name(this.name)
+                .email(this.email)
+                .phone(this.phone)
+                .address(new Address(city, street, zipcode))
+                .build();
+    }
 }

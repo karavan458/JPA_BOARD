@@ -2,6 +2,7 @@ package com.project.spring_jpa_board.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -28,6 +29,7 @@ public class Post {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
+    @Builder
     private Post(String title, String content, Member member) {
         this.title = title;
         this.content = content;

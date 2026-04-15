@@ -5,11 +5,8 @@ import com.project.spring_jpa_board.domain.entity.Post;
 import com.project.spring_jpa_board.domain.repository.CommentRepository;
 import com.project.spring_jpa_board.domain.repository.MemberRepository;
 import com.project.spring_jpa_board.domain.repository.PostRepository;
-import com.project.spring_jpa_board.web.dto.member.SessionDTO;
-import com.project.spring_jpa_board.web.dto.post.PostListDTO;
-import com.project.spring_jpa_board.web.dto.post.PostSaveDTO;
-import com.project.spring_jpa_board.web.dto.post.PostSearchCondition;
-import com.project.spring_jpa_board.web.dto.post.PostUpdateDTO;
+import com.project.spring_jpa_board.web.dto.member.MemberSession;
+import com.project.spring_jpa_board.web.dto.post.*;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,11 +27,11 @@ public class PostService {
     private final CommentRepository commentRepository;
 
     @Transactional
-    public Long savePost(Long memberId, PostSaveDTO postSaveDTO) {
+    public Long savePost(Long memberId, PostSaveRequest postSaveRequest) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new EntityNotFoundException("작성자를 찾을 수 없습니다."));
 
-        Post post = Post.createPost(postSaveDTO.getTitle(), postSaveDTO.getContent(), member);
+        Post post = postSaveRequest.toEntity(member);
         postRepository.save(post);
 
         return post.getId();
@@ -47,32 +44,30 @@ public class PostService {
     }
 
     @Transactional
-    public void update(Long id, PostUpdateDTO postUpdateDTO, SessionDTO loginMember) {
-        Post updatePost = postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("게시물을 찾을 수 없습니다."));
+    public void update(Long id, PostUpdateRequest postUpdateRequest, MemberSession loginMember) {
+        Post post = findById(id);
 
-        validateAuthor(loginMember, updatePost);
-        updatePost.update(postUpdateDTO.getTitle(), postUpdateDTO.getContent());
+        validateAuthor(loginMember, post);
+        post.update(postUpdateRequest.getTitle(), postUpdateRequest.getContent());
     }
 
     @Transactional
-    public Long delete(Long id, SessionDTO loginMember) {
-        Post deletePost = postRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("게시물을 찾을 수 없습니다."));
+    public Long delete(Long id, MemberSession loginMember) {
+        Post post = findById(id);
 
-        validateAuthor(loginMember, deletePost);
-        postRepository.delete(deletePost);
+        validateAuthor(loginMember, post);
+        postRepository.delete(post);
         return id;
     }
 
-    private static void validateAuthor(SessionDTO loginMember, Post updatePost) {
-        if(!updatePost.getMember().getId().equals(loginMember.getId())) {
+    private void validateAuthor(MemberSession loginMember, Post post) {
+        if (!post.getMember().getId().equals(loginMember.getId())) {
             throw new IllegalStateException("해당 게시글의 작성자가 아닙니다.");
         }
     }
 
     @Transactional(readOnly = true)
-    public Page<PostListDTO> search(PostSearchCondition condition, Pageable pageable) {
+    public Page<PostListResponse> search(PostSearchCondition condition, Pageable pageable) {
         Page<Post> postPage = postRepository.search(condition, pageable);
 
         if(postPage.isEmpty()) {
@@ -87,7 +82,7 @@ public class PostService {
 
         return postPage.map(post -> {
             int commentCount = commentCountMap.getOrDefault(post.getId(), 0);
-            return new PostListDTO(post, commentCount);
+            return new PostListResponse(post, commentCount);
         });
     }
 }

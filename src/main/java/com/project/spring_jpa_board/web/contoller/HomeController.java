@@ -1,6 +1,6 @@
 package com.project.spring_jpa_board.web.contoller;
 
-import com.project.spring_jpa_board.web.dto.member.SessionDTO;
+import com.project.spring_jpa_board.web.dto.member.MemberSession;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
@@ -18,7 +18,7 @@ public class HomeController {
             return "index";
         }
 
-        SessionDTO sessionDTO = (SessionDTO) session.getAttribute("loginMember");
+        MemberSession sessionDTO = (MemberSession) session.getAttribute("loginMember");
         if(sessionDTO == null) {
             return "index";
         }

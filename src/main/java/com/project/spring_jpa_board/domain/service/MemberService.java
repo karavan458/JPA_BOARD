@@ -4,10 +4,10 @@ import com.project.spring_jpa_board.domain.entity.Member;
 import com.project.spring_jpa_board.domain.repository.CommentRepository;
 import com.project.spring_jpa_board.domain.repository.MemberRepository;
 import com.project.spring_jpa_board.domain.repository.PostRepository;
-import com.project.spring_jpa_board.web.dto.member.JoinDTO;
-import com.project.spring_jpa_board.web.dto.member.LoginDTO;
-import com.project.spring_jpa_board.web.dto.member.MyPageDTO;
-import com.project.spring_jpa_board.web.dto.member.SessionDTO;
+import com.project.spring_jpa_board.web.dto.member.MemberJoinRequest;
+import com.project.spring_jpa_board.web.dto.member.MemberLoginRequest;
+import com.project.spring_jpa_board.web.dto.member.MemberMyPageResponse;
+import com.project.spring_jpa_board.web.dto.member.MemberSession;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +22,7 @@ public class MemberService {
     private final CommentRepository commentRepository;
 
     @Transactional(readOnly = true)
-    public Member login(LoginDTO loginDTO) {
+    public Member login(MemberLoginRequest loginDTO) {
 
         Member member = memberRepository.findByLoginId(loginDTO.getLoginId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 아이디입니다."));
@@ -35,10 +35,9 @@ public class MemberService {
     }
 
     @Transactional
-    public Long join(JoinDTO joinDTO) {
+    public Long join(MemberJoinRequest joinDTO) {
         validateDuplicateMember(joinDTO.getLoginId());
-
-        Member member = Member.createMember(joinDTO);
+        Member member = joinDTO.toEntity();
 
         memberRepository.save(member);
         return member.getId();
@@ -51,15 +50,15 @@ public class MemberService {
                 });
     }
 
-    public MyPageDTO getMyPage(SessionDTO sessionDTO) {
-        long postCount = postRepository.countByMemberId(sessionDTO.getId());
-        long commentCount = commentRepository.countByMemberId(sessionDTO.getId());
+    @Transactional(readOnly = true)
+    public MemberMyPageResponse getMyPage(MemberSession sessionDTO) {
+        Member member = memberRepository.findById(sessionDTO.getId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        return new MyPageDTO(
-                sessionDTO.getName(),
-                sessionDTO.getEmail(),
-                postCount,
-                commentCount
+        long postCount = postRepository.countByMemberId(member.getId());
+        long commentCount = commentRepository.countByMemberId(member.getId());
+
+        return new MemberMyPageResponse(member, postCount, commentCount
         );
     }
 }

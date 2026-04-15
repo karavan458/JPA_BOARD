@@ -2,10 +2,10 @@ package com.project.spring_jpa_board.web.contoller;
 
 import com.project.spring_jpa_board.domain.entity.Member;
 import com.project.spring_jpa_board.domain.service.MemberService;
-import com.project.spring_jpa_board.web.dto.member.JoinDTO;
-import com.project.spring_jpa_board.web.dto.member.LoginDTO;
-import com.project.spring_jpa_board.web.dto.member.MyPageDTO;
-import com.project.spring_jpa_board.web.dto.member.SessionDTO;
+import com.project.spring_jpa_board.web.dto.member.MemberJoinRequest;
+import com.project.spring_jpa_board.web.dto.member.MemberLoginRequest;
+import com.project.spring_jpa_board.web.dto.member.MemberMyPageResponse;
+import com.project.spring_jpa_board.web.dto.member.MemberSession;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -24,13 +24,13 @@ public class MemberController {
 
     @GetMapping("/join")
     public String joinForm(Model model) {
-        model.addAttribute("joinDTO", new JoinDTO());
+        model.addAttribute("joinDTO", new MemberJoinRequest());
         return "members/joinForm";
     }
 
     @PostMapping("/join")
     public String join(
-            @Valid @ModelAttribute("joinDTO") JoinDTO joinDTO,
+            @Valid @ModelAttribute("joinDTO") MemberJoinRequest joinDTO,
             BindingResult bindingResult) {
 
         if(bindingResult.hasErrors()) {
@@ -49,13 +49,13 @@ public class MemberController {
 
     @GetMapping("/login")
     public String loginForm(Model model) {
-        model.addAttribute("loginDTO", new LoginDTO());
+        model.addAttribute("loginDTO", new MemberLoginRequest());
         return "members/loginForm";
     }
 
     @PostMapping("/login")
     public String login(
-            @Valid @ModelAttribute("loginDTO") LoginDTO loginDTO,
+            @Valid @ModelAttribute("loginDTO") MemberLoginRequest loginDTO,
             BindingResult bindingResult,
             @RequestParam(value = "redirectURL", defaultValue = "/") String redirectURL,
             HttpServletRequest request) {
@@ -68,12 +68,12 @@ public class MemberController {
             Member loginMember = memberService.login(loginDTO);
             HttpSession session = request.getSession();
 
-            SessionDTO sessionDTO = new SessionDTO(loginMember.getId(), loginMember.getLoginId(), loginMember.getName(), loginMember.getEmail());
+            MemberSession sessionDTO = new MemberSession(loginMember);
+
             session.setAttribute("loginMember", sessionDTO);
 
             return "redirect:" + redirectURL;
         } catch (IllegalArgumentException e) {
-
             bindingResult.reject("loginError", e.getMessage());
             return "members/loginForm";
         }
@@ -81,10 +81,10 @@ public class MemberController {
 
     @GetMapping("/mypage")
     public String myPage(
-            @SessionAttribute(name = "loginMember") SessionDTO loginMember,
+            @SessionAttribute(name = "loginMember") MemberSession loginMember,
             Model model) {
 
-        MyPageDTO myPage = memberService.getMyPage(loginMember);
+        MemberMyPageResponse myPage = memberService.getMyPage(loginMember);
         model.addAttribute("myPage", myPage);
 
         return "members/myPage";

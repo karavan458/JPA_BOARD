@@ -5,7 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class LoginDTO {
+public class MemberLoginRequest {
 
     @NotBlank(message = "아이디는 필수 입력 값입니다.")
     private String loginId;

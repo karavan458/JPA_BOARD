@@ -1,8 +1,8 @@
 package com.project.spring_jpa_board.domain.entity;
 
-import com.project.spring_jpa_board.web.dto.member.JoinDTO;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
@@ -48,17 +48,14 @@ public class Member {
         this.createdAt = createdAt;
     }
 
-    public static Member createMember(JoinDTO joinDTO) {
-        Member member = new Member();
-        member.loginId = joinDTO.getLoginId();
-        member.password = joinDTO.getPassword();
-        member.name = joinDTO.getName();
-        member.email = joinDTO.getEmail();
-        member.phone = joinDTO.getPhone();
-
-        member.address = new Address(joinDTO.getCity(), joinDTO.getStreet(), joinDTO.getZipcode());
-        member.createdAt = LocalDateTime.now();
-
-        return member;
+    @Builder
+    public Member(String loginId, String password, String name, String email, String phone, Address address) {
+        this.loginId = loginId;
+        this.password = password;
+        this.name = name;
+        this.email = email;
+        this.phone = phone;
+        this.address = address;
+        this.createdAt = LocalDateTime.now();
     }
 }

@@ -2,6 +2,7 @@ package com.project.spring_jpa_board.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.BatchSize;
@@ -42,10 +43,12 @@ public class Comment {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Comment> children = new ArrayList<>();
 
-    public Comment(String content, Member member, Post post) {
+    @Builder
+    private Comment(String content, Member member, Post post, Comment parent) {
         this.content = content;
         this.member = member;
         this.post = post;
+        this.parent = parent;
         this.createdAt = LocalDateTime.now();
         this.status = CommentStatus.NORMAL;
     }

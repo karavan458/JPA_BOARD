@@ -6,14 +6,14 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class PostListDTO {
+public class PostListResponse {
     private final Long id;
     private final String title;
     private final String writerName;
     private final LocalDateTime createdAt;
     private final int commentCount;
 
-    public PostListDTO(Post post, int commentCount) {
+    public PostListResponse(Post post, int commentCount) {
         this.id = post.getId();
         this.title = post.getTitle();
         this.writerName = post.getMember().getName();
