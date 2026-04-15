@@ -11,5 +11,5 @@ public interface CommentRepositoryCustom {
 
     Map<Long, Integer> countByPostId(List<Long> postIds);
     Page<Comment> findByPostWithPaging(Long postId, Pageable pageable);
-    Page<Comment> findChildrenPage(Long parentId, Pageable pageable);
+    List<Comment> findChildrenByParentIds(List<Long> parentIds);
 }

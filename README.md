@@ -12,27 +12,20 @@
 ---
 ## 📂 Project Structure (프로젝트 구조)
 ```text
-spring-jpa-board/
-├── .gradle/
-├── .idea/
-├── src/
-│   └── main/
-│       ├── java/com/project/spring_jpa_board/
-│       │   ├── config/          # 시스템 설정
-│       │   ├── domain/
-│       │   │   ├── entity/      # Member, Post, Comment, Address
-│       │   │   ├── repository/  # JpaRepository 인터페이스
-│       │   │   └── service/     # 비즈니스 로직 (MemberService 등)
-│       │   ├── exception/       # 공통 예외 처리
-│       │   └── web/
-│       │       ├── controller/  # HomeController, MemberController
-│       │       └── dto/         # JoinDTO, LoginDTO, SessionDTO
-│       └── resources/
-│           ├── static/          # CSS, JS, 이미지 (정적 파일)
-│           ├── templates/       # Thymeleaf 뷰 (joinForm, home 등)
-│           └── application.properties # 시스템 환경 설정
-├── build.gradle                 # 빌드 및 의존성 관리
-└── README.md                    # 프로젝트 문서
+src/main/java/com/project/spring_jpa_board/
+├── config/              # QuerydslConfig, WebConfig (인터셉터 등록)
+├── domain/
+│   ├── entity/          # @BatchSize가 적용된 Member, Comment
+│   ├── repository/      # Custom Repository를 통한 동적 쿼리 제어
+│   └── service/         # 불변 DTO 변환 및 비즈니스 로직 조립
+├── web/
+│   ├── advice/          # GlobalExceptionHandler (전역 예외 처리)
+│   ├── controller/      # 레이어별 컨트롤러 분리
+│   ├── dto/             # 계층별 최적화된 DTO (Comment, Member, Post)
+│   └── interceptor/     # 권한 검증 로직
+└── resources/
+    └── templates/
+        └── error/       # 사용자 정의 에러 페이지 (4xx, 5xx)
 ```
 ---
 ## 📅 Development Log (시스템 설계 및 디버깅 기록)
@@ -171,3 +164,30 @@ spring-jpa-board/
     * **결정** : 성능은 Batch 조회로 잡고 로직은 서비스 레이어 조립 방식을 채택하여 각 도메인 리포지토리의 독립된 책임을 유지.
   * **데이터 구조의 공학적 선택(`Map`)**
     * 단순히 반복을 돌리는 것이 아닌 `StreamAPI`, `Map`을 결합하여 시간 복잡도를 줄이는 것이 대규모 트래픽을 견디는 설계의 기초임을 확인.
+
+---
+
+### 📂 [2026-04-13] Phase 8: 성능 최적화 및 시스템 안정성 강화
+> **"Batch Fetching을 통한 쿼리 상수화 `O(1)`및 전역 인프라 구축"**
+
+* **Core Implementation**
+  * **Hierarchy Comment**
+    * **문제 정의** : 부모 댓글 (10개) 조회 후, 각 부모의 대댓글을 개별 조회할 경우 부모 개수만큼의 추가 쿼리 발생(N + 1).
+    * **해결 방안** : `@BatchSize(size = 100)` 전략을 채택, Hibernate의 배치 페칭 매커니즘을 통해 부모 ID들을 `IN` 로 묶어 대댓글을 일괄 로드하게 설계.
+    * **기대 효과** : 데이터 규모 (N)와 무관하게 댓글 조회 쿼리 수를 일정하게 유지하여 시스템 예측 가능성 확보.
+  * **Global Infra**
+    * **설계 구조** : `HandlerInterceptor`를 통한 중앙 집중식 권한 검증 및 `@ControllerAdvice` 기반의 전역 예외 처리기 구축.
+    * **Rationale** :  개별 컨트롤러에서 인증 및 예외 로직을 분리함으로써 비즈니스 로직의 응집도를 높이고 시스템 전반의 횡단 관심사(Cross-cutting Concerns)를 효율적으로 관리.
+* **System Debugging & Troubleshooting**
+  * **다중 연관 관계의 N + 1 문제 해결**
+    * **현상** : 댓글 엔티티 최적화 후에도 대댓글 작성자(`Member`) 정보를 개별적으로 호출하는 추가 쿼리 로그 확인.
+    * **조치** : 
+      1. `Member` 엔티티 클래스 레벨에 `@BatchSize` 를 전역 적용
+      2. 대댓글 로드시 연관된 작성자 엔티티 들 가지도 `IN` 절 기반의 벌크 조회가 일어나도록 유도.
+    * **지표** : 상세 페이지 로드시 발생하는 쿼리 수를 약 5, 6(페이징 적용시)개 수준의 상수로 고정.
+* **Architectural Insight**
+  * **프레임워크 매커니즘을 이용한 복잡성 제어**
+    * **통찰** : 모든 최적화 로직을 서비스 레이어에서 수동 조립시 코드 복잡도가 비대해져 유지보수 난해해짐.
+    * **결정** : JPA의 지연 로딩 최적화 기능(`BatchSize`)를 적극 활용하여 런타임 성능과 최소한의 코드 복잡도 사이에서의 나름의 최적화를 도출.
+  * **사용자 경험과 시스템 안정성의 결합**
+    * 단순히 에러를 로그에 남기는 것이 아닌, 전역 예외 처리기를 통해 정돈된 에러 페이지를 제공함.

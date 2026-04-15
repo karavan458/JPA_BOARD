@@ -46,10 +46,14 @@ public class CommentService {
         return commentRepository.save(comment).getId();
     }
 
-    public List<CommentResponseDTO> getComments(Long postId) {
-        return commentRepository.findByPostIdWithMember(postId).stream()
-                .map(CommentResponseDTO::new)
-                .toList();
+    public Page<CommentResponseDTO> getComments(Long postId, Pageable pageable) {
+        Page<Comment> parentPage = commentRepository.findByPostWithPaging(postId, pageable);
+
+        if (parentPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        return parentPage.map(CommentResponseDTO::new);
     }
 
     @Transactional(readOnly = true)
