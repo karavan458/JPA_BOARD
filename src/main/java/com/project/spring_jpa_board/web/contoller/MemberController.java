@@ -4,6 +4,7 @@ import com.project.spring_jpa_board.domain.entity.Member;
 import com.project.spring_jpa_board.domain.service.MemberService;
 import com.project.spring_jpa_board.web.dto.member.JoinDTO;
 import com.project.spring_jpa_board.web.dto.member.LoginDTO;
+import com.project.spring_jpa_board.web.dto.member.MyPageDTO;
 import com.project.spring_jpa_board.web.dto.member.SessionDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -12,10 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -31,7 +29,10 @@ public class MemberController {
     }
 
     @PostMapping("/join")
-    public String join(@Valid @ModelAttribute("joinDTO") JoinDTO joinDTO, BindingResult bindingResult) {
+    public String join(
+            @Valid @ModelAttribute("joinDTO") JoinDTO joinDTO,
+            BindingResult bindingResult) {
+
         if(bindingResult.hasErrors()) {
             return "members/joinForm";
         }
@@ -53,7 +54,12 @@ public class MemberController {
     }
 
     @PostMapping("/login")
-    public String login(@Valid @ModelAttribute("loginDTO") LoginDTO loginDTO, BindingResult bindingResult, HttpServletRequest request) {
+    public String login(
+            @Valid @ModelAttribute("loginDTO") LoginDTO loginDTO,
+            BindingResult bindingResult,
+            @RequestParam(value = "redirectURL", defaultValue = "/") String redirectURL,
+            HttpServletRequest request) {
+
         if(bindingResult.hasErrors()) {
             return "members/loginForm";
         }
@@ -64,13 +70,24 @@ public class MemberController {
 
             SessionDTO sessionDTO = new SessionDTO(loginMember.getId(), loginMember.getLoginId(), loginMember.getName(), loginMember.getEmail());
             session.setAttribute("loginMember", sessionDTO);
+
+            return "redirect:" + redirectURL;
         } catch (IllegalArgumentException e) {
-            // 필드 에러가 아닌 객체 자체의 글로벌 에러로 등록
+
             bindingResult.reject("loginError", e.getMessage());
             return "members/loginForm";
         }
+    }
 
-        return "redirect:/";
+    @GetMapping("/mypage")
+    public String myPage(
+            @SessionAttribute(name = "loginMember") SessionDTO loginMember,
+            Model model) {
+
+        MyPageDTO myPage = memberService.getMyPage(loginMember);
+        model.addAttribute("myPage", myPage);
+
+        return "members/myPage";
     }
 
     @PostMapping("/logout")

@@ -1,0 +1,54 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragment/nav :: navbar}"></div>
+
+<div class="container" style="max-width: 800px; margin-top: 50px;">
+    <div class="py-5 text-center">
+        <h2>마이페이지</h2>
+        <p class="lead">나의 활동 지표와 프로필을 확인하세요.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title border-bottom pb-2">기본 정보</h5>
+                    <p class="card-text"><strong>이름:</strong> <span th:text="${myPage.name}">홍길동</span></p>
+                    <p class="card-text"><strong>이메일:</strong> <span th:text="${myPage.email}">test@test.com</span></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card text-white bg-primary mb-3 shadow">
+                <div class="card-body text-center">
+                    <h5 class="card-title">작성한 게시글</h5>
+                    <p class="display-4 fw-bold" th:text="${myPage.postCount}">0</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card text-white bg-success mb-3 shadow">
+                <div class="card-body text-center">
+                    <h5 class="card-title">작성한 댓글</h5>
+                    <p class="display-4 fw-bold" th:text="${myPage.commentCount}">0</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <a href="/" class="btn btn-secondary">홈으로</a>
+        <a href="/post/list" class="btn btn-primary">게시글 목록보기</a>
+    </div>
+</div>
+</body>
+</html>

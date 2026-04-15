@@ -5,14 +5,15 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <title>게시글 수정</title>
     <style>
-        .container { max-width: 700px; margin-top: 50px; }
+        .content-container { max-width: 700px; margin-top: 50px; }
         .field-error { color: #dc3545; font-size: 0.875em; margin-top: 0.25rem; }
         .is-invalid { border-color: #dc3545 !important; }
     </style>
 </head>
 <body>
+<div th:replace="~{fragment/nav :: navbar}"></div>
 
-<div class="container">
+<div class="container content-container">
     <div class="py-5 text-center">
         <h2>게시글 수정</h2>
         <p class="lead">내용을 수정한 후 완료 버튼을 눌러주세요.</p>

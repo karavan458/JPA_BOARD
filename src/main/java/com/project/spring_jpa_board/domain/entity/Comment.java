@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -31,6 +33,13 @@ public class Comment {
     @Enumerated(EnumType.STRING)
     private CommentStatus status;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "PARENT_ID")
+    private Comment parent;
+
+    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    private List<Comment> children = new ArrayList<>();
+
     public Comment(String content, Member member, Post post) {
         this.content = content;
         this.member = member;
@@ -48,5 +57,14 @@ public class Comment {
             return "삭제된 댓글입니다.";
         }
         return this.content;
+    }
+
+    public void addChildComment(Comment child) {
+        this.children.add(child);
+        child.setParent(this);
+    }
+
+    private void setParent(Comment parent) {
+        this.parent = parent;
     }
 }

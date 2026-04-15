@@ -2,10 +2,9 @@ package com.project.spring_jpa_board.web.dto.comment;
 
 import com.project.spring_jpa_board.domain.entity.Comment;
 import lombok.Getter;
-
 import java.time.format.DateTimeFormatter;
-
-import static com.project.spring_jpa_board.domain.entity.QComment.comment;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 public class CommentResponseDTO {
@@ -14,12 +13,26 @@ public class CommentResponseDTO {
     private final String content;
     private final String writerName;
     private final String createdAt;
+    private final List<CommentResponseDTO> children;
+    private final Long memberId;
+    private final boolean hasMoreChildren;
+    private final int totalChildrenCount;
 
     public CommentResponseDTO(Comment comment) {
         this.id = comment.getId();
-        this.content = comment.getContent();
-        this.writerName = comment.getMember().getName(); // 작성자 ID 대신 이름을 추출
+        this.content = comment.getDisplayContent();
+        this.writerName = comment.getMember().getName();
         this.createdAt = comment.getCreatedAt()
-                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")); // 가독성 있게 포맷팅
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        this.memberId = comment.getMember().getId();
+
+        List<Comment> allChildren = comment.getChildren();
+        this.totalChildrenCount = allChildren.size();
+
+        this.children = allChildren.stream()
+                .map(CommentResponseDTO::new)
+                .collect(Collectors.toList());
+
+        this.hasMoreChildren = false;
     }
 }

@@ -15,4 +15,6 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostRepositor
 
     // 최신순 정렬 조회
     List<Post> findAllByOrderByCreatedAtDesc();
+
+    long countByMemberId(Long memberId);
 }

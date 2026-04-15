@@ -14,4 +14,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long>, Comment
 
     @Query("select count(c) from Comment c where c.post.id = :postId and c.status = 'NORMAL'")
     int countNormalCommentsByPostId(@Param("postId") Long postId);
+
+    long countByMemberId(Long memberId);
 }

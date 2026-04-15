@@ -5,8 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Getter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentRequestDTO {
@@ -19,7 +20,9 @@ public class CommentRequestDTO {
 
     private Long memberId;
 
-    public static CommentRequestDTO create(String content, Long postId, Long memberId) {
-        return new CommentRequestDTO(content, postId, memberId);
+    private Long parentId;
+
+    public static CommentRequestDTO create(String content, Long postId, Long memberId, Long parentId) {
+        return new CommentRequestDTO(content, postId, memberId, parentId);
     }
 }

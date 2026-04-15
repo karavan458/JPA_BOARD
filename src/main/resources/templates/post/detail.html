@@ -4,86 +4,39 @@
     <meta charset="utf-8">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <title>Spring Board - 상세 보기</title>
+    <style>
+        .reply-section { margin-left: 40px; background-color: #f9f9f9; border-left: 3px solid #dee2e6; padding: 10px; margin-top: 5px; }
+        .comment-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+        .deleted-comment { color: #adb5bd; font-style: italic; }
+    </style>
 </head>
 <body>
-<div class="container" style="max-width: 800px; margin-top: 50px;">
-    <div class="py-4 text-center">
-        <h2 class="fw-bold">게시글 상세</h2>
-    </div>
+<div th:replace="~{fragment/nav :: navbar}"></div>
+<div class="container" style="max-width: 800px; margin-top: 50px; margin-bottom: 100px;">
 
-    <div class="card shadow-sm">
+    <div class="card shadow-sm mb-5">
         <div class="card-body">
-            <div class="mb-3">
-                <label class="form-label fw-bold">제목</label>
-                <input type="text" th:value="${post.title}" class="form-control-plaintext border-bottom" readonly>
+            <h3 class="fw-bold mb-3" th:text="${post.title}">제목</h3>
+            <div class="d-flex justify-content-between text-muted mb-4 border-bottom pb-2">
+                <span th:text="|작성자: ${post.writerName}|">작성자</span>
+                <span th:text="${post.createdAt}">2026-04-15</span>
             </div>
+            <div class="mb-4" style="min-height: 150px; white-space: pre-wrap;" th:text="${post.content}">내용</div>
 
-            <div class="row mb-3">
-                <div class="col-md-6">
-                    <label class="form-label fw-bold">작성자</label>
-                    <p class="form-control-plaintext" th:text="${post.writerName}">홍길동</p>
-                </div>
-                <div class="col-md-6 text-md-end">
-                    <label class="form-label fw-bold">작성일</label>
-                    <p class="form-control-plaintext text-muted"
-                       th:text="${#temporals.format(post.createdAt, 'yyyy-MM-dd HH:mm:ss')}">2026-04-09</p>
-                </div>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label fw-bold">내용</label>
-                <div class="p-3 bg-light rounded shadow-inner" style="min-height: 200px; white-space: pre-wrap;"
-                     th:text="${post.content}">
-                    게시글 내용이 여기에 표시됩니다.
-                </div>
-            </div>
-
-            <div class="card my-4">
-                <h5 class="card-header">Comments:</h5>
-                <div class="card-body">
-                    <div th:each="comment : ${comments}" class="mb-4">
-                        <div class="d-flex">
-                            <div class="ms-3">
-                                <div class="fw-bold" th:text="${comment.writerName}">작성자 이름</div>
-                                <div class="text-muted small" th:text="${comment.createdAt}">2026-04-12 21:30:00</div>
-                                <p th:text="${comment.content}">댓글 내용</p>
-                            </div>
-                        </div>
-                        <hr>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card my-4" th:if="${loginMember != null}">
-                <h5 class="card-header">Leave a Comment:</h5>
-                <div class="card-body">
-                    <form th:action="@{/post/{postId}/comment(postId=${post.id})}" method="post">
-                        <div class="form-group mb-3">
-                            <textarea class="form-control" name="content" rows="3" required></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
-                    </form>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between">
-                <button type="button" class="btn btn-secondary"
-                        th:onclick="|location.href='@{/post/list(page=${param.page}, title=${param.title}, writer=${param.writer})}'|">
-                    목록으로
-                </button>
-
-                <div th:if="${session.loginMember != null and session.loginMember.id == post.writerId}">
-
-                    <a th:href="@{/post/{id}/update(id=${post.id}, page=${param.page}, title=${param.title}, writer=${param.writer})}"
-                       class="btn btn-outline-warning">수정</a>
+            <div class="d-flex justify-content-between border-top pt-3">
+                <a th:href="@{/post/list}" class="btn btn-secondary">목록</a>
+                <div th:if="${loginMember != null and loginMember.id == post.writerId}">
+                    <a th:href="@{/post/{id}/update(id=${post.id})}" class="btn btn-outline-warning">수정</a>
                     <form th:action="@{/post/{id}/delete(id=${post.id})}" method="post" style="display:inline;">
-                        <button type="submit" class="btn btn-outline-danger"
-                                onclick="return confirm('정말로 삭제하시겠습니까?');">삭제</button>
+                        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('삭제하시겠습니까?')">삭제</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
+
+    <div th:replace="~{post/comment-section :: commentFragment}"></div>
+
 </div>
 </body>
 </html>

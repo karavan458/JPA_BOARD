@@ -33,28 +33,21 @@ public class PostController {
     private final CommentService commentService;
 
     @GetMapping("/new")
-    public String createForm(Model model,
-            @SessionAttribute(name = "loginMember", required = false) SessionDTO loginMember) {
-
-        if(loginMember == null) {
-            return "redirect:/";
-        }
+    public String createForm(Model model) {
 
         model.addAttribute("postForm", new PostSaveDTO());
         return "post/createForm";
     }
 
     @PostMapping("/new")
-    public String create(@Validated @ModelAttribute("postForm") PostSaveDTO postSaveDTO, BindingResult bindingResult,
-            @SessionAttribute(name = "loginMember", required = false) SessionDTO loginMember) {
+    public String create(
+            @Validated @ModelAttribute("postForm") PostSaveDTO postSaveDTO,
+            BindingResult bindingResult,
+            @SessionAttribute(name = "loginMember") SessionDTO loginMember) {
 
         if(bindingResult.hasErrors()) {
             log.info("errors : {}", bindingResult.getAllErrors());
             return "post/createForm";
-        }
-
-        if(loginMember == null) {
-            return "redirect:/";
         }
 
         postService.savePost(loginMember.getId(), postSaveDTO);
@@ -62,31 +55,39 @@ public class PostController {
     }
 
     @GetMapping("/{postId}")
-    public String read(@PathVariable("postId") Long postId,
-             @SessionAttribute(name = "loginMember", required = false) SessionDTO loginMember, Model model) {
+    public String read(
+            @PathVariable("postId") Long postId,
+            @PageableDefault(size = 10) Pageable pageable,
+            Model model) {
 
         Post post = postService.findById(postId);
         model.addAttribute("post", PostDetailDTO.from(post));
-        model.addAttribute("loginMember", loginMember);
 
-        List<CommentResponseDTO> comments = commentService.getComments(postId);
+        Page<CommentResponseDTO> comments = commentService.getCommentPage(postId, pageable);
         model.addAttribute("comments", comments);
+
         return "post/detail";
     }
 
     @PostMapping("/{postId}/comment")
     public String comment(
             @PathVariable("postId") Long postId,
-            @RequestParam("content") String content,
-            @SessionAttribute(name = "loginMember", required = false) SessionDTO loginMember) {
+            @ModelAttribute CommentRequestDTO requestDTO,
+            @RequestParam(value = "page", defaultValue = "0") int page,
+            @SessionAttribute(name = "loginMember", required = false) SessionDTO loginMember,
+            RedirectAttributes redirectAttributes) {
 
-        log.info("postId : {}, content : {}", postId, content);
-        log.info("loginMember : {}", loginMember.getLoginId());
+        if (loginMember == null) {
+            return "redirect:/login";
+        }
 
-        CommentRequestDTO requestDTO = CommentRequestDTO.create(content, postId, loginMember.getId());
+        requestDTO.setMemberId(loginMember.getId());
+        requestDTO.setPostId(postId);
 
         commentService.saveComment(requestDTO);
-        return "redirect:/post/" + postId;
+
+        redirectAttributes.addAttribute("page", page);
+        return "redirect:/post/{postId}";
     }
 
     @GetMapping("/list")
@@ -95,7 +96,6 @@ public class PostController {
             @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable,
             Model model) {
 
-        log.info("검색 조건 복구 확인: title={}, writer={}", condition.getTitle(), condition.getWriter());
         Page<PostListDTO> page = postService.search(condition, pageable);
 
         page.getContent().forEach(dto -> {
@@ -108,30 +108,30 @@ public class PostController {
     }
 
     @GetMapping("/{postId}/update")
-    public String updateForm(@PathVariable("postId") Long postId, Model model) {
-        Post post = postService.findById(postId);
+    public String updateForm(
+            @PathVariable("postId") Long postId,
+            Model model) {
 
+        Post post = postService.findById(postId);
         PostUpdateDTO postUpdateDTO = new PostUpdateDTO(post.getTitle(), post.getContent());
+
         model.addAttribute("postId", postId);
         model.addAttribute("postUpdateDTO", postUpdateDTO);
         return "post/updateForm";
     }
 
     @PostMapping("/{postId}/update")
-    public String update(@PathVariable("postId") Long postId,
+    public String update(
+            @PathVariable("postId") Long postId,
             @Valid @ModelAttribute PostUpdateDTO postUpdateDTO,
             BindingResult bindingResult,
-            @SessionAttribute(name = "loginMember", required = false) SessionDTO loginMember,
+            @SessionAttribute(name = "loginMember") SessionDTO loginMember,
             @ModelAttribute("postSearch") PostSearchCondition condition,
             @PageableDefault Pageable pageable,
             RedirectAttributes redirectAttributes) {
 
         if(bindingResult.hasErrors()) {
             return "post/updateForm";
-        }
-
-        if(loginMember == null) {
-            return "redirect:/";
         }
 
         postService.update(postId, postUpdateDTO, loginMember);
@@ -145,11 +145,7 @@ public class PostController {
 
     @PostMapping("/{postId}/delete")
     public String delete(@PathVariable("postId") Long postId,
-            @SessionAttribute(name = "loginMember", required = false) SessionDTO loginMember) {
-
-        if(loginMember == null) {
-            return "redirect:/";
-        }
+            @SessionAttribute(name = "loginMember") SessionDTO loginMember) {
 
         postService.delete(postId, loginMember);
         return "redirect:/post/list";

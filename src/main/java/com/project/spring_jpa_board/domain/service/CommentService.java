@@ -9,6 +9,8 @@ import com.project.spring_jpa_board.domain.repository.PostRepository;
 import com.project.spring_jpa_board.web.dto.comment.CommentRequestDTO;
 import com.project.spring_jpa_board.web.dto.comment.CommentResponseDTO;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +35,14 @@ public class CommentService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원 입니다."));
 
         Comment comment = new Comment(requestDTO.getContent(), member, post);
+
+        if (requestDTO.getParentId() != null) {
+            Comment parent = commentRepository.findById(requestDTO.getParentId())
+                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 부모 댓글입니다."));
+
+            parent.addChildComment(comment);
+        }
+
         return commentRepository.save(comment).getId();
     }
 
@@ -40,5 +50,24 @@ public class CommentService {
         return commentRepository.findByPostIdWithMember(postId).stream()
                 .map(CommentResponseDTO::new)
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<CommentResponseDTO> getCommentPage(Long postId, Pageable pageable) {
+
+        Page<Comment> commentPage = commentRepository.findByPostWithPaging(postId, pageable);
+        return commentPage.map(CommentResponseDTO::new);
+    }
+
+    @Transactional
+    public void delete(Long commentId, Long memberId) {
+        Comment comment = commentRepository.findById(commentId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 댓글 입니다."));
+
+        if(!comment.getMember().getId().equals(memberId)) {
+            throw new IllegalArgumentException("해당 댓글을 삭제할 권한이 없습니다.");
+        }
+
+        comment.delete();
     }
 }
